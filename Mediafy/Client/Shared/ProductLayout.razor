@@ -1,0 +1,40 @@
+﻿@page "/ProductLayout"
+@using Mediafy.Shared
+@using System.Threading
+@inject HttpClient Client
+@inject IJSRuntime JsRuntime
+
+<div class="card h-100 border-primary">
+    <img class="img-thumbnail" src="@Product.Image"/>
+    <div class="card-body d-flex flex-column">
+        <h5 class="card-title">@Product.Name</h5>
+        <p class="card-text">@Product.FromPrice</p>
+        <button
+            type="button"
+            data-toggle="modal"
+            data-target="#templateModal"
+            data-modal-title="@Product.Name"
+            data-modal-desc="@(string.IsNullOrEmpty(Product.Description) ? "Ingen beskrivning" : Product.Description)"
+            class="mt-auto btn btn-primary"
+            @onclick="e => HandleDescriptionDisplayed()">
+            Visa beskrivning
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Product Product { get; set; }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        JsRuntime.InvokeVoidAsync("handleModal");
+    }
+
+    private async Task HandleDescriptionDisplayed()
+    {
+        Product.TimesShown++;
+
+        await Client.PutAsJsonAsync("Product", Product, CancellationToken.None);
+    }
+}
